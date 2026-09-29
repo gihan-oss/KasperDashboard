@@ -1,0 +1,557 @@
+<!-- ============================================================
+     ACTION LAYER
+     Every line of information on every page is editable in place and
+     carries its own action button. Nothing is behind an edit mode.
+     ============================================================ -->
+<style>
+/* --- editable text --- */
+[data-kb-ed]{border-radius:4px; outline:none; transition:box-shadow .14s, background .14s;
+  text-decoration-line:underline; text-decoration-style:dotted; text-decoration-color:transparent;
+  text-underline-offset:3px; text-decoration-thickness:1px}
+[data-kb-ed]:hover{text-decoration-color:var(--tx3)}
+[data-kb-ed]:focus{text-decoration-color:transparent; background:rgba(123,92,255,.08); box-shadow:0 0 0 2px var(--pink)}
+
+/* --- the count badge on any item that carries actions (CSS only, so it
+       never becomes part of the editable text) --- */
+[data-kb-has]::after{content:attr(data-kb-has); display:inline-block; vertical-align:middle;
+  margin-left:7px; font-family:var(--sans); font-size:9px; font-weight:700; line-height:16px;
+  min-width:16px; height:16px; padding:0 5px; border-radius:9px; text-align:center;
+  background:var(--kb-c,#e08a22); color:#fff; letter-spacing:0; text-decoration:none}
+.kb-unit-hot{background:rgba(123,92,255,.06); border-radius:4px}
+
+/* --- the floating action button that tracks the hovered line --- */
+#kb-rail{position:absolute; z-index:40; display:none; align-items:center; gap:5px;
+  height:24px; padding:0 9px; border:1px solid var(--line2); border-radius:20px;
+  background:var(--panel2); color:var(--tx3); cursor:pointer; white-space:nowrap;
+  font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:.02em;
+  box-shadow:0 4px 14px -6px rgba(0,0,0,.45); transition:color .14s, border-color .14s}
+#kb-rail.show{display:inline-flex}
+#kb-rail:hover{color:var(--pink); border-color:var(--pink)}
+#kb-rail .kb-plus{font-size:13px; line-height:1}
+
+/* --- the popover --- */
+#kb-pop{position:absolute; z-index:41; display:none; width:min(460px,calc(100vw - 32px));
+  background:var(--card); border:1px solid var(--line2); border-radius:14px; padding:14px;
+  box-shadow:0 22px 60px -22px rgba(0,0,0,.6)}
+#kb-pop.show{display:block}
+#kb-pop .kb-ph{display:flex; align-items:baseline; gap:8px; margin-bottom:3px}
+#kb-pop .kb-ph b{font-family:var(--serif); font-size:13px; font-weight:600}
+#kb-pop .kb-close{margin-left:auto; background:none; border:0; color:var(--tx3); font-size:15px; cursor:pointer; line-height:1}
+#kb-pop .kb-close:hover{color:var(--red)}
+#kb-pop .kb-ctx{font-size:11px; color:var(--tx3); margin-bottom:11px; line-height:1.45;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.kb-list{display:flex; flex-direction:column; gap:6px}
+.kb-item{display:grid; grid-template-columns:92px 1fr 104px 124px 24px; gap:6px; align-items:center;
+  padding:5px; border:1px solid var(--line); border-radius:9px; background:rgba(127,127,160,.05)}
+.kb-item.done .kb-t{text-decoration:line-through; opacity:.55}
+.kb-item input{background:var(--card); border:1px solid var(--line2); border-radius:6px; padding:5px 7px;
+  font-family:var(--sans); font-size:11.5px; font-weight:500; color:var(--tx); width:100%; min-width:0}
+.kb-item input:focus{outline:none; border-color:var(--pink)}
+.kb-st{border:0; border-radius:6px; padding:5px 4px; cursor:pointer; color:#fff; background:var(--c,#9aa3ce);
+  font-family:var(--sans); font-size:9px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; white-space:nowrap}
+.kb-del{background:none; border:0; color:var(--tx3); font-size:13px; line-height:1; cursor:pointer; padding:2px}
+.kb-del:hover{color:var(--red)}
+.kb-add{display:grid; grid-template-columns:1fr 104px 124px auto; gap:6px; margin-top:8px}
+.kb-add input{background:var(--card); border:1px solid var(--line2); border-radius:6px; padding:7px 9px;
+  font-family:var(--sans); font-size:11.5px; color:var(--tx); width:100%; min-width:0}
+.kb-add input:focus{outline:none; border-color:var(--pink)}
+.kb-addbtn{border:0; border-radius:6px; padding:7px 13px; cursor:pointer; color:#fff; background:var(--grad);
+  font-family:var(--sans); font-size:11.5px; font-weight:700; white-space:nowrap}
+.kb-empty{font-size:11.5px; color:var(--tx3); padding:3px 2px}
+
+/* --- the hint under each page intro --- */
+.kb-hintbar{display:flex; align-items:center; gap:7px; margin-top:12px; font-size:11px; color:var(--tx3)}
+.kb-hintbar .kb-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px;
+  border:1px solid var(--line2); font-weight:700; font-size:10px; color:var(--tx2)}
+
+/* --- sidebar count badges --- */
+.navitem .kb-badge{margin-left:auto; font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:10px;
+  background:var(--c,#e08a22); color:#fff; flex:0 0 auto}
+
+/* --- roll-up page --- */
+.kb-group{margin-top:14px}
+.kb-gh{display:flex; align-items:baseline; gap:9px; margin-bottom:9px; flex-wrap:wrap}
+.kb-gh b{font-size:12.5px; font-weight:700}
+.kb-gh .kb-where{font-size:11px; color:var(--tx3)}
+.kb-jump{background:none; border:0; color:var(--pink); font-size:11px; font-weight:600; cursor:pointer; padding:0}
+.kb-jump:hover{text-decoration:underline}
+.kb-filters{display:flex; gap:7px; flex-wrap:wrap; margin:16px 0 4px}
+.kb-fchip{border:1px solid var(--line2); background:none; color:var(--tx2); border-radius:20px;
+  padding:5px 12px; font-family:var(--sans); font-size:11px; font-weight:600; cursor:pointer; transition:.15s}
+.kb-fchip:hover{border-color:var(--pink); color:var(--pink)}
+.kb-fchip.on{background:var(--grad-soft); border-color:var(--line2); color:var(--tx)}
+.kb-tools{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px}
+.kb-tool{border:1px solid var(--line2); background:none; color:var(--tx2); border-radius:9px;
+  padding:7px 13px; font-family:var(--sans); font-size:11.5px; font-weight:600; cursor:pointer}
+.kb-tool:hover{border-color:var(--pink); color:var(--pink)}
+@media (max-width:820px){
+  .kb-item{grid-template-columns:1fr 24px}
+  .kb-item .kb-st{grid-column:1/3}
+  .kb-add{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function(){
+'use strict';
+
+/* ---------------- store ---------------- */
+var LS='kasper.board.v3';
+var DB={v:3,text:{},act:{},meta:{}};
+try{
+  var raw=localStorage.getItem(LS);
+  if(raw){var pr=JSON.parse(raw); if(pr&&typeof pr==='object'){
+    DB.text=pr.text||{}; DB.act=pr.act||{}; DB.meta=pr.meta||{};
+  }}
+}catch(e){/* blocked or private storage — run from memory */}
+var _sT=null;
+function save(){clearTimeout(_sT);_sT=setTimeout(function(){
+  try{localStorage.setItem(LS,JSON.stringify(DB));}catch(e){}
+},250);}
+
+var STAT=[['Not started','#9aa3ce'],['In progress','#e08a22'],['Blocked','#d64550'],['Done','#1fa971']];
+function statIdx(n){n=+n; return (n>=0&&n<STAT.length)?n:0;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function slug(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,44)||'w';}
+function uid(){return 'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function label(el){return (el.textContent||'').replace(/\s+/g,' ').trim().slice(0,90);}
+
+function items(k){ if(!DB.act[k])DB.act[k]=[]; return DB.act[k]; }
+function openCount(k){ return items(k).filter(function(i){return i.s!==3;}).length; }
+function worst(k){
+  var l=items(k).filter(function(i){return i.s!==3;});
+  if(!l.length)return -1;
+  if(l.some(function(i){return i.s===2;}))return 2;
+  if(l.some(function(i){return i.s===1;}))return 1;
+  return 0;
+}
+function modOf(k){return String(k).split('|')[0];}
+function modOpen(mod){var n=0;Object.keys(DB.act).forEach(function(k){if(modOf(k)===mod)n+=openCount(k);});return n;}
+function totalOpen(){var n=0;Object.keys(DB.act).forEach(function(k){n+=openCount(k);});return n;}
+
+/* ---------------- what counts as a widget and as a line ---------------- */
+var W_SEL='.card,.pcard,.opcard,.tactcard,.flipcard,.win,.rec,.kpi';
+var ED_SEL='h3,h4,h5,h6,p,li,blockquote,.lab,.sub,.num,.secttl,.sechint,.lede,.h1,.eyebrow,.deptcost,.ml,.glabel';
+/* rows that hold information but are not plain text (scorecard measures,
+   gantt rows, tracked items) — they get an action button too */
+var ROW_SEL='.mrow,.katrow,.slrow,.lgrow';
+
+function widgetsIn(root){
+  return Array.prototype.filter.call(root.querySelectorAll(W_SEL),function(c){
+    if(c.tagName==='BUTTON'||c.closest('button'))return false;
+    return !c.parentElement.closest(W_SEL);
+  });
+}
+function titleOf(w){
+  var h=w.querySelector('.secttl,h3,h4,h5,h6,.kah');
+  var t=h?label(h):'';
+  if(!t){var f=w.querySelector('b,strong,.lab'); t=f?label(f):'';}
+  return (t||label(w)).slice(0,70);
+}
+function edEls(scope,onlyDirect){
+  var list=onlyDirect
+    ? Array.prototype.filter.call(scope.children,function(e){return e.matches(ED_SEL);})
+    : Array.prototype.slice.call(scope.querySelectorAll(ED_SEL));
+  return list.filter(function(e){
+    if(e.closest('#kb-pop')||e.closest('.kb-hintbar'))return false;
+    if(e.querySelector('input,select,button,canvas,svg,table,'+W_SEL))return false;
+    return label(e).length>0;
+  });
+}
+
+/* ---------------- inline editing ---------------- */
+function wireText(scope,key,onlyDirect){
+  edEls(scope,onlyDirect).forEach(function(e,i){
+    var id=key+'#'+i;
+    if(Object.prototype.hasOwnProperty.call(DB.text,id) && DB.text[id]!==e.innerHTML)e.innerHTML=DB.text[id];
+    if(e.hasAttribute('data-kb-ed'))return;
+    e.setAttribute('data-kb-ed',String(i));
+    e.setAttribute('contenteditable','true');
+    e.spellcheck=false;
+    e.addEventListener('input',function(){
+      DB.text[key+'#'+e.getAttribute('data-kb-ed')]=e.innerHTML; save();
+    });
+    e.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ev.preventDefault();e.blur();} });
+  });
+}
+
+/* ---------------- units: one action target per line of information -------- */
+function unitsIn(w){
+  var seen=[];
+  Array.prototype.forEach.call(w.querySelectorAll('[data-kb-ed],'+ROW_SEL),function(e){
+    if(e.closest('#kb-pop'))return;
+    if(e.matches(ROW_SEL)&&e.querySelector('[data-kb-ed]'))return; // the inner line wins
+    seen.push(e);
+  });
+  return seen;
+}
+function paintUnit(el){
+  var k=el.getAttribute('data-kb-unit'); if(!k)return;
+  var n=openCount(k), wst=worst(k);
+  if(n){ el.setAttribute('data-kb-has',String(n)); el.style.setProperty('--kb-c',STAT[wst][1]); }
+  else { el.removeAttribute('data-kb-has'); el.style.removeProperty('--kb-c'); }
+}
+
+/* ---------------- floating button + popover ---------------- */
+var rail=document.createElement('button');
+rail.id='kb-rail'; rail.type='button';
+rail.innerHTML='<span class="kb-plus">+</span><span>Action</span>';
+rail.setAttribute('title','Add an action for this item');
+document.body.appendChild(rail);
+
+var pop=document.createElement('div');
+pop.id='kb-pop';
+document.body.appendChild(pop);
+
+var hotEl=null, popKey=null, popEl=null;
+
+function place(el,node,below){
+  var r=el.getBoundingClientRect();
+  var sx=window.scrollX||window.pageXOffset, sy=window.scrollY||window.pageYOffset;
+  if(below){
+    var w=node.offsetWidth||420;
+    var left=Math.min(r.left+sx, sx+document.documentElement.clientWidth-w-16);
+    node.style.left=Math.max(sx+16,left)+'px';
+    node.style.top=(r.bottom+sy+8)+'px';
+  }else{
+    var host=el.closest('[data-kb-key]')||el.closest('.main')||document.body;
+    var hr=host.getBoundingClientRect();
+    var bw=node.offsetWidth||86;
+    var left=r.right+8;
+    var limit=hr.right-bw-10;              // never spill past the card it belongs to
+    if(left>limit)left=Math.max(hr.left+8,limit);
+    node.style.left=(left+sx)+'px';
+    node.style.top=(r.top+sy+Math.max(0,(Math.min(r.height,24)-24)/2))+'px';
+  }
+}
+function showRail(el){
+  if(popKey)return;                       // popover open: leave the button where it is
+  if(hotEl===el)return;
+  if(hotEl)hotEl.classList.remove('kb-unit-hot');
+  hotEl=el;
+  if(!el){rail.classList.remove('show');return;}
+  el.classList.add('kb-unit-hot');
+  var n=openCount(el.getAttribute('data-kb-unit'));
+  rail.innerHTML=n?('<span class="kb-plus">\u2691</span><span>'+n+' action'+(n===1?'':'s')+'</span>')
+                  :'<span class="kb-plus">+</span><span>Action</span>';
+  rail.classList.add('show');
+  place(el,rail,false);
+}
+function hideRail(){
+  if(popKey)return;
+  if(hotEl)hotEl.classList.remove('kb-unit-hot');
+  hotEl=null; rail.classList.remove('show');
+}
+function openPop(el){
+  popEl=el; popKey=el.getAttribute('data-kb-unit');
+  renderPop();
+  pop.classList.add('show');
+  place(el,pop,true);
+  var i=pop.querySelector('input[name="t"]'); if(i)i.focus();
+}
+function closePop(){
+  popKey=null; popEl=null; pop.classList.remove('show'); hideRail();
+}
+function renderPop(){
+  if(!popKey)return;
+  var list=items(popKey), meta=DB.meta[popKey]||{};
+  pop.innerHTML='<div class="kb-ph"><b>Actions</b>'
+    +'<button class="kb-close" type="button" data-kb-act="close" aria-label="Close">&#10005;</button></div>'
+    +'<div class="kb-ctx">'+esc(meta.l||'this item')+'</div>'
+    +'<div class="kb-list">'+(list.length?list.map(row).join('')
+      :'<div class="kb-empty">No actions on this item yet.</div>')+'</div>'
+    +'<form class="kb-add">'
+    +'<input name="t" placeholder="What needs to happen?" aria-label="New action" required>'
+    +'<input name="o" placeholder="Owner" aria-label="Owner">'
+    +'<input name="d" type="date" aria-label="Due date">'
+    +'<button class="kb-addbtn" type="submit">Add</button></form>';
+}
+function row(it){
+  var s=statIdx(it.s);
+  return '<div class="kb-item'+(s===3?' done':'')+'" data-kb-item="'+esc(it.id)+'">'
+    +'<button class="kb-st" type="button" data-kb-act="cycle" style="--c:'+STAT[s][1]+'">'+esc(STAT[s][0])+'</button>'
+    +'<input class="kb-t" data-kb-f="t" value="'+esc(it.t)+'" aria-label="Action">'
+    +'<input data-kb-f="o" value="'+esc(it.o)+'" placeholder="Owner" aria-label="Owner">'
+    +'<input data-kb-f="d" type="date" value="'+esc(it.d)+'" aria-label="Due date">'
+    +'<button class="kb-del" type="button" data-kb-act="del" title="Remove" aria-label="Remove">&#10005;</button></div>';
+}
+function afterChange(){
+  if(popEl)paintUnit(popEl);
+  renderPop();
+  paintNav();
+  var a=document.getElementById('m-actions');
+  if(a&&a.classList.contains('on'))renderActions();
+  save();
+}
+
+/* pointer + keyboard targeting */
+document.addEventListener('mouseover',function(ev){
+  var t=ev.target.closest?ev.target.closest('[data-kb-unit]'):null;
+  if(t&&t.closest('.mod.on'))showRail(t);
+});
+document.addEventListener('mouseout',function(ev){
+  if(ev.relatedTarget&&(ev.relatedTarget===rail||rail.contains(ev.relatedTarget)||pop.contains(ev.relatedTarget)))return;
+  var t=ev.target.closest?ev.target.closest('[data-kb-unit]'):null;
+  if(t&&t===hotEl)hideRail();
+});
+document.addEventListener('focusin',function(ev){
+  var t=ev.target.closest?ev.target.closest('[data-kb-unit]'):null;
+  if(t&&t.closest('.mod.on'))showRail(t);
+});
+rail.addEventListener('click',function(ev){
+  ev.preventDefault(); ev.stopPropagation();
+  if(hotEl)openPop(hotEl);
+});
+document.addEventListener('click',function(ev){
+  if(ev.target.closest('#kb-rail'))return;
+  var act=ev.target.closest('[data-kb-act]');
+  if(act){
+    var a=act.getAttribute('data-kb-act');
+    if(a==='close'){closePop();return;}
+    var r=act.closest('.kb-item'), id=r&&r.getAttribute('data-kb-item');
+    if(a==='cycle'){
+      var it=items(popKey).filter(function(x){return x.id===id;})[0];
+      if(it){it.s=(statIdx(it.s)+1)%STAT.length; afterChange();}
+    }else if(a==='del'){
+      DB.act[popKey]=items(popKey).filter(function(x){return x.id!==id;});
+      afterChange();
+    }
+    return;
+  }
+  if(popKey&&!ev.target.closest('#kb-pop'))closePop();
+});
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'&&popKey)closePop(); });
+pop.addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var f=ev.target.closest('.kb-add'); if(!f||!popKey)return;
+  var t=f.elements.t.value.trim(); if(!t)return;
+  items(popKey).push({id:uid(),t:t,o:f.elements.o.value.trim(),d:f.elements.d.value,s:0,ts:Date.now()});
+  afterChange();
+  var i=pop.querySelector('input[name="t"]'); if(i)i.focus();
+});
+pop.addEventListener('input',function(ev){
+  var f=ev.target.closest('[data-kb-f]'); if(!f||!popKey)return;
+  var r=f.closest('.kb-item'), id=r&&r.getAttribute('data-kb-item');
+  var it=items(popKey).filter(function(x){return x.id===id;})[0];
+  if(!it)return;
+  it[f.getAttribute('data-kb-f')]=f.value;
+  if(popEl)paintUnit(popEl);
+  paintNav(); save();
+});
+var _rp=null;
+function reposition(){
+  if(_rp)return;
+  _rp=requestAnimationFrame(function(){
+    _rp=null;
+    if(popKey&&popEl){place(popEl,pop,true); place(popEl,rail,false);}
+    else if(hotEl)place(hotEl,rail,false);
+  });
+}
+window.addEventListener('scroll',reposition,true);
+window.addEventListener('resize',reposition);
+
+/* ---------------- hint under each page intro ---------------- */
+function mountHint(sec){
+  if(sec.querySelector(':scope > .kb-hintbar'))return;
+  var a=sec.querySelector(':scope > .lede')||sec.querySelector(':scope > .h1')||sec.querySelector(':scope > .depthead');
+  if(!a)return;
+  var h=document.createElement('div');
+  h.className='kb-hintbar';
+  h.innerHTML='<span class="kb-chip"><span>+</span> Action</span>'
+    +'<span>Every line here is editable \u2014 click and type. Hover a line for its own action button.</span>';
+  a.insertAdjacentElement('afterend',h);
+}
+
+/* ---------------- scan ---------------- */
+var _busy=false;
+function scan(){
+  if(_busy)return;
+  var ae=document.activeElement;
+  if(ae&&(ae.isContentEditable||ae.tagName==='INPUT'||ae.tagName==='SELECT'||ae.tagName==='TEXTAREA'))return;
+  _busy=true;
+  try{
+    document.querySelectorAll('.mod.on').forEach(function(sec){
+      var mod=sec.id.replace(/^m-/,'');
+      if(mod==='actions')return;
+      mountHint(sec);
+      wireText(sec,mod+'|page',true);
+      var seen={};
+      widgetsIn(sec).forEach(function(w,i){
+        var t=titleOf(w)||('Widget '+(i+1));
+        var sl=slug(t); seen[sl]=(seen[sl]||0)+1;
+        var key=mod+'|'+sl+'|'+seen[sl];
+        w.setAttribute('data-kb-key',key);
+        wireText(w,key,false);
+      });
+      /* one action target per line, page-level lines included */
+      var uc={};
+      [sec].forEach(function(){});
+      var units=[];
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-kb-ed],'+ROW_SEL),function(e){
+        if(e.closest('#kb-pop')||e.closest('.kb-hintbar'))return;
+        if(e.matches(ROW_SEL)&&e.querySelector('[data-kb-ed]'))return;
+        units.push(e);
+      });
+      units.forEach(function(e){
+        var wrap=e.closest('[data-kb-key]');
+        var base=wrap?wrap.getAttribute('data-kb-key'):(mod+'|page');
+        uc[base]=(uc[base]||0)+1;
+        var k=base+'@'+uc[base];
+        e.setAttribute('data-kb-unit',k);
+        DB.meta[k]={m:mod,w:wrap?(DB.meta[base]&&DB.meta[base].t)||titleOf(wrap):'',l:label(e)};
+        if(wrap&&!DB.meta[base])DB.meta[base]={m:mod,t:titleOf(wrap)};
+        paintUnit(e);
+      });
+    });
+    paintNav();
+  }finally{_busy=false;}
+}
+function paintNav(){
+  document.querySelectorAll('#nav .navitem').forEach(function(b){
+    var mod=b.dataset.t;
+    var n=(mod==='actions')?totalOpen():modOpen(mod);
+    var badge=b.querySelector('.kb-badge');
+    if(!n){ if(badge)badge.remove(); return; }
+    if(!badge){badge=document.createElement('span'); badge.className='kb-badge'; b.appendChild(badge);}
+    badge.textContent=n;
+    var wk=-1;
+    Object.keys(DB.act).forEach(function(k){
+      if(mod!=='actions'&&modOf(k)!==mod)return;
+      var w=worst(k); if(w>wk)wk=w;
+    });
+    badge.style.setProperty('--c', wk>=0?STAT[wk][1]:'#9aa3ce');
+  });
+}
+
+/* ---------------- roll-up page ---------------- */
+var _filter='open';
+window.kbFilter=function(f){_filter=f;renderActions();};
+window.kbGoto=function(key){
+  closePop();
+  window.go(modOf(key));
+  setTimeout(function(){
+    var el=document.querySelector('[data-kb-unit="'+CSS.escape(key)+'"]');
+    if(!el)return;
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(function(){showRail(el);openPop(el);},420);
+  },300);
+};
+window.kbExport=function(){
+  var b=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='kasper-dashboard-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+};
+window.kbImport=function(){
+  var i=document.createElement('input'); i.type='file'; i.accept='application/json,.json';
+  i.onchange=function(){
+    var f=i.files&&i.files[0]; if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var pr=JSON.parse(r.result);
+        if(!pr||typeof pr!=='object')throw new Error('bad');
+        DB.text=pr.text||{}; DB.act=pr.act||{}; DB.meta=pr.meta||{};
+        save(); location.reload();
+      }catch(e){ alert('That file could not be read as a dashboard export.'); }
+    };
+    r.readAsText(f);
+  };
+  i.click();
+};
+function renderActions(){
+  var sec=document.getElementById('m-actions'); if(!sec)return;
+  var rows=[];
+  Object.keys(DB.act).forEach(function(k){
+    items(k).forEach(function(it){
+      if(_filter==='open'&&it.s===3)return;
+      if(_filter==='blocked'&&it.s!==2)return;
+      if(_filter==='done'&&it.s!==3)return;
+      rows.push({k:k,it:it});
+    });
+  });
+  rows.sort(function(a,b){
+    if(a.it.d&&b.it.d&&a.it.d!==b.it.d)return a.it.d<b.it.d?-1:1;
+    if(a.it.d&&!b.it.d)return -1;
+    if(!a.it.d&&b.it.d)return 1;
+    return (a.it.ts||0)-(b.it.ts||0);
+  });
+  var byKey={}; rows.forEach(function(r){(byKey[r.k]=byKey[r.k]||[]).push(r.it);});
+  var modName={};
+  document.querySelectorAll('#nav .navitem').forEach(function(b){
+    var l=b.querySelector('span:not(.ix):not(.kb-badge)');
+    modName[b.dataset.t]=l?l.textContent.trim():b.dataset.t;
+  });
+  var chips=[['open','Open'],['blocked','Blocked'],['done','Done'],['all','All']].map(function(c){
+    return '<button class="kb-fchip'+(_filter===c[0]?' on':'')+'" onclick="kbFilter(\''+c[0]+'\')">'+c[1]+'</button>';
+  }).join('');
+  var groups=Object.keys(byKey).map(function(k){
+    var m=DB.meta[k]||{};
+    var where=(modName[modOf(k)]||modOf(k))+(m.w?' \u00b7 '+m.w:'');
+    return '<div class="card pad kb-group">'
+      +'<div class="kb-gh"><b>'+esc(m.l||'Item')+'</b>'
+      +'<span class="kb-where">'+esc(where)+'</span>'
+      +'<button class="kb-jump" onclick="kbGoto(\''+k.replace(/'/g,"\\'")+'\')">Open \u2197</button></div>'
+      +'<div class="kb-list">'+byKey[k].map(function(it){
+        var s=statIdx(it.s);
+        return '<div class="kb-item'+(s===3?' done':'')+'" style="grid-template-columns:92px 1fr 104px 124px">'
+          +'<span class="kb-st" style="--c:'+STAT[s][1]+';cursor:default">'+esc(STAT[s][0])+'</span>'
+          +'<span class="kb-t" style="font-size:12px">'+esc(it.t)+'</span>'
+          +'<span style="font-size:11px;color:var(--tx3)">'+(it.o?esc(it.o):'\u2014')+'</span>'
+          +'<span style="font-size:11px;color:var(--tx3)">'+(it.d?esc(it.d):'no date')+'</span></div>';
+      }).join('')+'</div></div>';
+  }).join('');
+  var total=totalOpen();
+  sec.innerHTML='<div class="eyebrow">Needs attention</div>'
+    +'<h1 class="h1">Actionable <em>items</em></h1>'
+    +'<p class="lede">Every action attached to any line of information anywhere on the dashboard. '
+    +'Add one by hovering a line on any page and pressing its <b>+ Action</b> button. '
+    +'Items are stored in this browser and carry across sessions.</p>'
+    +'<div class="kb-filters">'+chips+'</div>'
+    +(groups||'<div class="card pad mt2"><p class="sechint">Nothing flagged yet. Open any page, hover a line and press <b>+ Action</b>.</p></div>')
+    +'<div class="kb-tools"><button class="kb-tool" onclick="kbExport()">Export all edits &amp; actions</button>'
+    +'<button class="kb-tool" onclick="kbImport()">Import\u2026</button></div>'
+    +'<p class="sechint" style="margin-top:10px">'+total+' open action'+(total===1?'':'s')+' across the dashboard.</p>';
+}
+if(!window.RENDERERS)window.RENDERERS={_done:{}};
+window.RENDERERS.actions=function(){renderActions();};
+
+(function(){
+  var origGo=window.go;
+  window.go=function(id){
+    closePop();
+    if(window.RENDERERS&&window.RENDERERS._done)delete window.RENDERERS._done.actions;
+    var r=origGo.apply(this,arguments);
+    requestAnimationFrame(function(){scan();setTimeout(scan,140);});
+    return r;
+  };
+})();
+
+/* ---------------- keep up with dynamic re-renders ---------------- */
+var _mo=new MutationObserver(function(){clearTimeout(_mo._t);_mo._t=setTimeout(scan,120);});
+function boot(){
+  var main=document.querySelector('.main');
+  if(main)_mo.observe(main,{childList:true,subtree:true});
+  scan(); paintNav();
+}
+
+/* ---------------- land on Company Overview ---------------- */
+function landing(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('cover')==='1')return;                       // splash on demand
+  var deep=(location.hash.match(/^#\/?m\/([a-z]+)/i)||location.pathname.match(/\/m\/([a-z]+)/i)||[])[1];
+  var target=(deep&&document.getElementById('m-'+deep))?deep:'overview';
+  if(window.enterDash)window.enterDash();
+  // enterDash queues its own go('overview') on the next frame — land after it
+  requestAnimationFrame(function(){requestAnimationFrame(function(){window.go(target);});});
+}
+window.addEventListener('hashchange',function(){
+  var m=(location.hash.match(/^#\/?m\/([a-z]+)/i)||[])[1];
+  if(m&&document.getElementById('m-'+m))window.go(m);
+});
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){landing();boot();});
+else { landing(); boot(); }
+
+})();
+</script>
