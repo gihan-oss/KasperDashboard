@@ -84,6 +84,8 @@ A lot of onboarding is entirely ours — Twilio configuration is the clearest ca
 
 **The rule for our own work:** show it when the client is waiting on it, hide it when they aren't. Twilio provisioning and the tenant build are invisible plumbing. Customer Profile and Compliance Registration are the opposite: the client can't act on either, but they are the reason A2P hasn't started, so they stay visible with no button.
 
+**The consequence for stage 2:** with 2.1 and 2.4 ours, 2.2 already confirmed in Getting Started and 2.3 waiting on the carrier, Products & Services has **no client-owned sub-stage**. Everything the client actually does sits in stage 1, in booking a meeting, or in a document we are chasing. The biggest stage is a watching stage — which is why the estimates and the last-updated stamps carry more weight here than anywhere else in the product.
+
 **The failure mode:** hiding *all* our work makes the tracker look stalled during the stretches when we are busiest. If a stage has nothing client-owned in flight, one "Kasper is working on X" line must still be showing.
 
 ### 2.4 Rules that apply everywhere
@@ -195,9 +197,11 @@ Two different things under one number. Porting brings existing numbers over and 
 
 #### 2.4 Patient Forms
 
-The one sub-stage wholly owned by the client, and the one most likely to be left till last.
+**Kasper sets these up. Nothing for the client to do here.** The card exists so forms are visibly coming, not so they can be approved.
 
-- **Your forms** — the set to choose from · preview each as a patient would see it · per-form status (not reviewed → in review → approved) · approve individually or all at once
+- **Your forms** — forms selected for the practice → being built and tested → live in the office. No button.
+
+The client's only involvement is confirming the forms submit correctly at stage 4, which is verification rather than approval. If clinical or consent forms ever need practice sign-off, that is a one-time signature, not a per-form approval queue — do not let this card become one.
 
 ---
 
