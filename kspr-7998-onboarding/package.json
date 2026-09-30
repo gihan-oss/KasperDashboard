@@ -1,0 +1,10 @@
+{
+  "name": "kspr-7998-onboarding",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "KSPR-7998 onboarding tracker — catalogue and progress rules, for transplant into kasper-apex-react",
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}
