@@ -133,7 +133,16 @@ The list of blocks and what sits under each. The first three stages have no card
 - **First login screen** — stage rail with Getting Started active, short orientation, remaining intake form as the immediate task
 
 ### Stage 4 · Core Setup (entry) → tracker stage **Getting Started**
+
+*Your information*
 - **Remaining intake form** — basic office info · point of contact · extra point of contact · phones, fax & hardware · business registration & compliance (legal name, EIN, address, opening date)
+
+*Start now — the long lead items*
+- **Start your porting** — which numbers to bring over (or a new Kasper number) · sign the LOA · upload a recent carrier bill · same three steps for fax
+- **Confirm your hardware** — handset count, models, shipping address
+- **Heads-up: your website** — not a task yet; the privacy policy and SMS consent text to forward to whoever manages the site
+
+*Context*
 - **Your progress** — the four-stage rail, "3 of 5 sections complete"
 - **Your specialist** — persistent from here on
 - **What happens next** — preview of the three stages ahead
@@ -142,7 +151,7 @@ The list of blocks and what sits under each. The first three stages have no card
 ### Stage 5 · Core Setup → tracker stage **Compliance & Communication**
 - **Needs you** — the consolidated to-do, pulling every `Pending Office` item from every card below
 - **SMS & Messaging** — the sequential five-step chain: website URL → customer profile → compliance registration → website compliance → A2P campaign
-- **Phone Setup** — porting or new · sign LOA · upload carrier bill · numbers listed · port date · don't-cancel warning
+- **Phone Setup** — where porting is *tracked*, not where it starts: numbers listed · port date · don't-cancel warning · any outstanding document chased from here
 - **Fax Setup** — same pattern; collapses to one line when a new number is provided
 - **Hardware Phones** — models, quantity, order status, tracking, arrival before installation
 - **Forms** — list, status, preview, approve
@@ -181,6 +190,7 @@ The list of blocks and what sits under each. The first three stages have no card
 - What the next steps are and a realistic timeline.
 - Their onboarding specialist: name, email, direct line, booking link.
 - A **"what we'll need from you"** preview — website URL, EIN, a signed LOA, a recent carrier bill. This belongs here, not in the tracker, because the client will not see the tracker for days and these are the items with lead time.
+- **"Find your last phone bill now."** Keeping the current number is the longest part of onboarding and cannot start without it.
 - One button: **Start your Getting Started form.**
 
 **Exits when:** the form is opened.
@@ -236,7 +246,24 @@ The remaining intake form, completed in-portal. Per the process design this can 
 - Phones, fax & hardware
 - Business registration & compliance (legal name, EIN, address, opening date)
 
-**Client sees**
+**Two jobs sit here**, and the second matters more than it looks: this is where the client starts everything with a long lead time, so the clock runs on porting and hardware while the compliance work is still ahead of us.
+
+#### Start your porting — the longest lead item in onboarding
+
+Porting moves from Compliance & Communication to here. Every day it waits is a day added to go-live, and the wait is the carrier's, not ours. The client does three things:
+
+1. **Which numbers are you bringing over?** — or choose a new Kasper number instead
+2. **Sign your Letter of Authorization** — e-sign
+3. **Upload a recent bill from your current carrier** — the name and address on it must match the LOA, which is the single most common reason a port is rejected
+
+Same three steps for fax. Once submitted, this hands off to the Phone Setup and Fax Setup cards in the next stage, which are where the port is *tracked* rather than where it begins.
+
+Two more long-lead items belong here for the same reason:
+
+- **Confirm your hardware** — handset count, models, shipping address, so the order is placed early enough to arrive before installation.
+- **Heads-up: your website** — not a task yet, a warning with lead time. Texting needs a privacy policy and SMS consent language live on the site, and most offices go through whoever manages it for them. Give them the copy-paste text now so they can forward it today rather than discovering the requirement three weeks in.
+
+**Client also sees**
 - A live section checklist and a headline that reads *"Waiting on you — 3 of 5 sections complete."*
 - **Save and resume.** Nobody completes this in one sitting, and unlike the short form, this one is long enough that losing progress loses the client.
 - "Why we need this" microcopy on every sensitive ask — EIN, LOA, billing statement. This is where drop-off happens.
