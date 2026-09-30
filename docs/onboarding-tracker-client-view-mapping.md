@@ -55,7 +55,8 @@ Admin has ~6 states. The client gets 4, and only 4, everywhere in the product.
 | `Pending Kasper` | **In progress** | Blue | "Kasper is working on it." Show an ETA. |
 | `Pending Third Party` | **Under review** | Blue | "With your carrier / the registry." Show an ETA + why it's out of our hands. |
 | `Blocked` | **Needs attention** | Amber | Never surface the word "blocked". Show "We've hit a snag — your specialist is reaching out." |
-| `Not Started` | **Up next** | Grey | Locked, with the unlock condition stated. |
+| `Not Started`, `Ready to Start` | **Up next** | Grey | Locked, or available but not begun, with the unlock condition stated. |
+| `Port Requested` | **Port requested** | Blue | Submitted to Twilio, waiting on the losing carrier to return a date. |
 | `In Progress` / `Complete` | **In progress** / **Complete** | Blue / Green | — |
 
 ### 2.2 Never shown to the client
@@ -78,6 +79,7 @@ Admin has ~6 states. The client gets 4, and only 4, everywhere in the product.
 - **Progress never goes backwards.** An A2P resubmission does not reset the bar.
 - **Locked items state their unlock condition** — "Starts once your Customer Profile is approved" — so silence never looks like neglect.
 - **Notify on transition only:** email/SMS when an item flips to *Action needed*, and when a milestone completes. Not on internal state churn.
+- **Design for a manual sync, at first.** HubSpot and the website sync manually in the first build, with the Twilio API automated later. A chip can therefore be stale by hours, and the client cannot tell "nothing has happened" apart from "nothing has synced". Until the sync is automatic: show when each card last updated, and treat any date the client plans around — above all the port cutover — as something to confirm against the record rather than trust from the page.
 - **Email carries what the portal can't reach.** Until first login, and for anything urgent after it, email is the channel. The tracker is where state lives; email is how the client is pulled back to it.
 
 ### 2.4 Who actually does the work
@@ -99,8 +101,8 @@ A lot of onboarding is done entirely on the Kasper side — Twilio configuration
 | Remaining intake sections | Client | Yes, with CTA |
 | Website URL — their own practice site | Client | Supplied at intake — a CTA only if missing |
 | Website Compliance (privacy policy, consent language) | Kasper | Yes, no CTA |
-| LOA signature | Client | Yes, with CTA |
-| Billing statement upload | Client | Yes, with CTA |
+| Document signing — LOA, BAA, billing statement | Client | Yes, with CTA. Also arrives by automated email; both routes lead to the same Kasper signing page |
+| Carrier bill upload | Client | Yes, with CTA |
 | Booking the three meetings | Client | Yes, with CTA |
 | Forms review & approval | Client | Yes, with CTA |
 | Final readiness confirmation | Client | Yes, with CTA |
@@ -122,7 +124,7 @@ A lot of onboarding is done entirely on the Kasper side — Twilio configuration
 The list of blocks and what sits under each. The first three stages have no cards — the client is not on the website yet.
 
 ### Stage 1 · Deal Won — *email, no cards*
-- **Welcome email** — next steps and timeline · specialist contact · "what we'll need from you" (website URL, EIN, signed LOA, recent carrier bill) · one button to the Getting Started form
+- **Welcome email** — next steps and timeline · specialist contact · "what we'll need from you" (website URL, EIN, three documents to sign, a recent carrier bill) · one button to the Getting Started form
 
 ### Stage 2 · Intake Form — *public form, no login*
 - **Getting Started form** — office display name · first and last name · email · mobile · desired URL (with an "I don't have a website yet" branch) · confirmation screen stating when their login arrives
@@ -138,7 +140,7 @@ The list of blocks and what sits under each. The first three stages have no card
 - **Remaining intake form** — basic office info · point of contact · extra point of contact · phones, fax & hardware · business registration & compliance (legal name, EIN, address, opening date)
 
 *Start now — the long lead items*
-- **Start your porting** — which numbers to bring over (or a new Kasper number) · sign the LOA · upload a recent carrier bill · same three steps for fax
+- **Start your porting** — which numbers to bring over (or a new Kasper number) · sign the three documents · upload a recent carrier bill · same steps for fax
 - **Confirm your hardware** — handset count, models, shipping address
 
 *Context*
@@ -188,7 +190,7 @@ The list of blocks and what sits under each. The first three stages have no card
 **The welcome email contains**
 - What the next steps are and a realistic timeline.
 - Their onboarding specialist: name, email, direct line, booking link.
-- A **"what we'll need from you"** preview — website URL, EIN, a signed LOA, a recent carrier bill. This belongs here, not in the tracker, because the client will not see the tracker for days and these are the items with lead time.
+- A **"what we'll need from you"** preview — website URL, EIN, three documents to sign (Letter of Agency, Business Associate Agreement, billing statement), a recent carrier bill. This belongs here, not in the tracker, because the client will not see the tracker for days and these are the items with lead time.
 - **"Find your last phone bill now."** Keeping the current number is the longest part of onboarding and cannot start without it.
 - One button: **Start your Getting Started form.**
 
@@ -245,6 +247,8 @@ The remaining intake form, completed in-portal. Per the process design this can 
 - Phones, fax & hardware
 - Business registration & compliance (legal name, EIN, address, opening date)
 
+The client presses **Start** and works through **structured batches** rather than one long form, per the EPIC 2 design. The mobile app mirrors this same getting-started flow, so the batch structure has to work at phone width first.
+
 **Two jobs sit here**, and the second matters more than it looks: this is where the client starts everything with a long lead time, so the clock runs on porting and hardware while the compliance work is still ahead of us.
 
 #### Start your porting — the longest lead item in onboarding
@@ -252,7 +256,7 @@ The remaining intake form, completed in-portal. Per the process design this can 
 Porting moves from Compliance & Communication to here. Every day it waits is a day added to go-live, and the wait is the carrier's, not ours. The client does three things:
 
 1. **Which numbers are you bringing over?** — or choose a new Kasper number instead
-2. **Sign your Letter of Authorization** — e-sign
+2. **Sign your documents** — three of them: Letter of Agency, Business Associate Agreement, and the billing statement. They go out by **automated email** and are signed **on a Kasper page, not DocuSign**. The email and the tracker card are two doors into the same signing page, so both must show the same state, and the card must not imply the tracker is the only route
 3. **Upload a recent bill from your current carrier** — the name and address on it must match the LOA, which is the single most common reason a port is rejected
 
 Same three steps for fax. Once submitted, this hands off to the Phone Setup and Fax Setup cards in the next stage, which are where the port is *tracked* rather than where it begins.
@@ -264,7 +268,7 @@ One more long-lead item belongs here for the same reason:
 **Client also sees**
 - A live section checklist and a headline that reads *"Waiting on you — 3 of 5 sections complete."*
 - **Save and resume.** Nobody completes this in one sitting, and unlike the short form, this one is long enough that losing progress loses the client.
-- "Why we need this" microcopy on every sensitive ask — EIN, LOA, billing statement. This is where drop-off happens.
+- "Why we need this" microcopy on every sensitive ask — EIN, LOA, BAA, billing statement. This is where drop-off happens.
 - Make **opening date** required here; it is the source of the `Opening Date Missing` flag.
 
 **Exits when:** all sections complete → Compliance & Communication unlocks.
@@ -296,7 +300,7 @@ Steps 2–5 render locked until their predecessor clears, each stating why.
 | Client element | HubSpot source |
 |---|---|
 | Two sub-tracks: *Porting an existing number* or *New number* | `Phone` |
-| **Sign LOA** (e-sign link) and **Upload recent carrier bill** | `Required Documents` = `LOA Pending`, `Billing Statement Pending`; `Required Documents Status` |
+| **Sign three documents** (LOA, BAA, billing statement — on a Kasper page, also sent by automated email) and **Upload recent carrier bill** | `Required Documents`, `Required Documents Status` |
 | Numbers being ported, listed | `Office Number`, `Extra Phone Numbers` |
 | Port date: *Requested* → *Confirmed for [date]* → *Complete*, and written onto the schedule card as soon as Twilio confirms it | `Phone Port Date` |
 | Standing warning: **"Do not cancel your current phone service until porting completes."** | — |
@@ -337,7 +341,7 @@ Appears from this stage onward as a persistent strip, because scheduling overlap
 
 **Dates the carrier gives us.** The port cutover is scheduled by Twilio and the losing carrier, not by us or the client, so it is **not bookable** and must never render with a *Book a time* button. It is written onto the schedule card the moment Twilio confirms it.
 
-4. **Phone port cutover** — *Requested* ("the carrier sets this, usually within a few days") → *Confirmed for Tue 14 Oct* → *Complete*. Driven by `Phone Port Date`.
+4. **Phone port cutover** — *Requested* ("your current carrier sets this date") → *Confirmed for Tue 14 Oct* → *Complete*. We submit the request to Twilio, Twilio returns a schedule from the **losing carrier**, and that date lands here. Driven by `Phone Port Date`.
 5. **Fax port cutover** — same, driven by `Fax Port Date`.
 
 Once confirmed, the client gets the date with add-to-calendar and the three things that actually matter on the day:
@@ -406,7 +410,7 @@ Flagging a line reopens the matching card and pushes the record back to the owni
 | `Website Compliance` | Tracker B | Kasper | SMS chain step 4 |
 | `A2P Campaign` | Tracker B | Third party | SMS chain step 5 |
 | `Hardware Phones` | Tracker B | Kasper | Hardware Phones card |
-| `Required Documents` / `…Status` | Tracker B | Client | LOA + billing statement to-dos |
+| `Required Documents` / `…Status` | Tracker B | Client | LOA, BAA and billing statement to-dos |
 | `Phone`, `Phone Port Date` | Tracker B | Third party | Phone Setup card, and the cutover date on the schedule rail |
 | `Fax`, `Fax Port Date` | Tracker B | Third party | Fax Setup card, and the cutover date on the schedule rail |
 | `Office Number`, `Office Fax Number`, `Extra Phone Numbers` | Tracker B / D | Kasper | Your numbers (card + final summary) |
@@ -427,7 +431,7 @@ The client is logged into the tracker, on stage B:
 >
 > **3 things need you:**
 > 1. Add your website URL → *SMS & Messaging*
-> 2. Sign your Letter of Authorization → *Phone Setup*
+> 2. Sign your three documents → *Phone Setup*
 > 3. Upload a recent phone bill → *Phone Setup*
 >
 > **In progress by Kasper:** Customer Profile — starts as soon as your website URL is in.
