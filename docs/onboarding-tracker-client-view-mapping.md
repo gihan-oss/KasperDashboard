@@ -39,7 +39,7 @@ The eight admin stages collapse to four stages in the tracker, plus a persistent
 | **Live With Kasper** | Ready to Schedule → Post Installation | The office is actively using Kasper; some services may still be finishing. Skippable. |
 | **Onboarding Complete** | Final Readiness → Closed | Everything done. |
 
-**Meetings rail** — Installation → Setup Call → Training. Visible from *Compliance & Communication* onward as a persistent strip, not a stage of its own, because scheduling overlaps the compliance work rather than following it.
+**Schedule rail** — Installation → Setup Call → Training, plus the carrier-set phone and fax port cutover dates. Visible from *Compliance & Communication* onward as a persistent strip, not a stage of its own, because scheduling overlaps the compliance work rather than following it.
 
 ---
 
@@ -97,8 +97,8 @@ A lot of onboarding is done entirely on the Kasper side — Twilio configuration
 | Item | Owner | In the tracker? |
 |---|---|---|
 | Remaining intake sections | Client | Yes, with CTA |
-| Website URL | Client | Yes, with CTA |
-| Website Compliance (privacy policy, consent language) | Client | Yes, with CTA — or hand to Kasper |
+| Website URL — their own practice site | Client | Supplied at intake — a CTA only if missing |
+| Website Compliance (privacy policy, consent language) | Kasper | Yes, no CTA |
 | LOA signature | Client | Yes, with CTA |
 | Billing statement upload | Client | Yes, with CTA |
 | Booking the three meetings | Client | Yes, with CTA |
@@ -140,7 +140,6 @@ The list of blocks and what sits under each. The first three stages have no card
 *Start now — the long lead items*
 - **Start your porting** — which numbers to bring over (or a new Kasper number) · sign the LOA · upload a recent carrier bill · same three steps for fax
 - **Confirm your hardware** — handset count, models, shipping address
-- **Heads-up: your website** — not a task yet; the privacy policy and SMS consent text to forward to whoever manages the site
 
 *Context*
 - **Your progress** — the four-stage rail, "3 of 5 sections complete"
@@ -155,13 +154,13 @@ The list of blocks and what sits under each. The first three stages have no card
 - **Fax Setup** — same pattern; collapses to one line when a new number is provided
 - **Hardware Phones** — models, quantity, order status, tracking, arrival before installation
 - **Forms** — list, status, preview, approve
-- **Your meetings** — the rail: installation · setup call · training
+- **Your schedule** — the rail: installation · setup call · training, plus the carrier-set phone and fax port cutover dates once Twilio confirms them
 
 ### Stage 6 · Ready to Schedule → Post Installation → tracker stage **Live With Kasper**
 - **You're live** — banner with go-live date
 - **Finishing touches** — only what's still open: SMS pending A2P · porting in flight · forms · training
 - **Your numbers** — phone, fax, URL, now shown as a record
-- **Your meetings** — what's left of the rail, plus recordings
+- **Your schedule** — what's left of the rail, usually training plus any cutover still ahead, plus recordings
 - **First-week resources** — quick-start videos, help centre, support line
 - **Something isn't working** — opens a ticket
 
@@ -208,7 +207,7 @@ The list of blocks and what sits under each. The first three stages have no card
 - A short single-screen form. Resist adding to it — every field here delays tenant creation, and everything else can be collected in the tracker where the client has context and can save progress.
 - On submit: a confirmation screen and email stating what happens next and when their login arrives.
 
-**Design note — `Desired URL` is load-bearing.** It is the first step of the compliance chain later. Ask for it here, with an explicit "I don't have a website yet" branch that flags the Kasper-hosted compliance page path. That single field is the source of the `No Website Domain` flag sitting on records today.
+**Design note — `Desired URL` is load-bearing.** It is the office's own website, and the first step of the compliance chain later. Captured here, it should already be green by the time the client reaches the SMS card. A record showing `No Website Domain` means this field never got filled — which is the argument for making it required rather than optional.
 
 **Exits when:** `Intake = Complete` → tenant build starts.
 
@@ -258,10 +257,9 @@ Porting moves from Compliance & Communication to here. Every day it waits is a d
 
 Same three steps for fax. Once submitted, this hands off to the Phone Setup and Fax Setup cards in the next stage, which are where the port is *tracked* rather than where it begins.
 
-Two more long-lead items belong here for the same reason:
+One more long-lead item belongs here for the same reason:
 
 - **Confirm your hardware** — handset count, models, shipping address, so the order is placed early enough to arrive before installation.
-- **Heads-up: your website** — not a task yet, a warning with lead time. Texting needs a privacy policy and SMS consent language live on the site, and most offices go through whoever manages it for them. Give them the copy-paste text now so they can forward it today rather than discovering the requirement three weeks in.
 
 **Client also sees**
 - A live section checklist and a headline that reads *"Waiting on you — 3 of 5 sections complete."*
@@ -283,13 +281,15 @@ Render this as a visibly **sequential 5-step chain**, not five independent tiles
 
 | Step | HubSpot property | Client state & action |
 |---|---|---|
-| 1. Website URL | `Website` | Carried in from the short form. Empty → **Action needed**: "Add your website URL", with the Kasper-hosted page branch. |
+| 1. Website URL | `Website` | The office's own website, supplied at intake. Normally already green; a client task only in the exception case where it is missing. |
 | 2. Customer Profile | `Customer Profile` | Built from the business registration section. → "Submitted for review." |
 | 3. Compliance Registration | `Compliance Registration` | **In progress**: "Kasper is registering your business" (EKM, A2P brand, voice integrity). |
-| 4. Website Compliance | `Website Compliance` | **Action needed**: "Your site needs a privacy policy and SMS consent language." Copy-paste snippets + *Mark as added* / *Have Kasper host it*. |
+| 4. Website Compliance | `Website Compliance` | **Kasper's work** — we put the privacy policy and SMS consent language on their site. Visible, no CTA. A `Pending Office` here usually cascades from a missing URL, not from compliance work we are asking the office to do. |
 | 5. A2P Campaign | `A2P Campaign` | **Under review**: "With the carrier — typically 2–5 business days." If returned, show only the item to correct. |
 
 Steps 2–5 render locked until their predecessor clears, each stating why.
+
+**Almost none of this chain is the client's.** They supply their website URL at intake; Customer Profile, Compliance Registration and Website Compliance are ours, and A2P is the carrier's. So this is a progress view rather than a task list — no buttons, just honest states and dates. It is also where the tracker is most at risk of reading as stalled: days of our work with nothing for the client to press. Every step needs a real estimate showing, not a spinner.
 
 #### 5.2 Card — Phone Setup
 
@@ -298,7 +298,7 @@ Steps 2–5 render locked until their predecessor clears, each stating why.
 | Two sub-tracks: *Porting an existing number* or *New number* | `Phone` |
 | **Sign LOA** (e-sign link) and **Upload recent carrier bill** | `Required Documents` = `LOA Pending`, `Billing Statement Pending`; `Required Documents Status` |
 | Numbers being ported, listed | `Office Number`, `Extra Phone Numbers` |
-| Port date: *Requested* → *Confirmed for [date]* → *Complete* | `Phone Port Date` |
+| Port date: *Requested* → *Confirmed for [date]* → *Complete*, and written onto the schedule card as soon as Twilio confirms it | `Phone Port Date` |
 | Standing warning: **"Do not cancel your current phone service until porting completes."** | — |
 | *(hidden)* | `Twilio Configuration` |
 
@@ -320,20 +320,33 @@ Digital forms to select, review and approve, with per-form status and preview.
 
 | Admin flag | What the client actually sees |
 |---|---|
-| `No Website Domain` | Step 1 of the SMS chain is *Action needed*, with the no-website branch offered. |
+| `No Website Domain` | The URL was not captured at intake. Step 1 of the SMS chain becomes *Action needed* — the one exception case, since the office normally supplies it on the form. |
 | `Opening Date Missing` | "Confirm your opening date" in the to-do list. |
 | `A2P Rejected` | "Registration returned for more detail — we've resubmitted" + the single field to correct. |
 | `Open Office` / `Open Soon` | Not shown. Internal prioritisation only. |
 
-#### 5.7 The meetings rail (admin: Ready to Schedule)
+#### 5.7 The schedule rail (admin: Ready to Schedule + port dates)
 
-Appears from this stage onward as a persistent strip, because scheduling overlaps compliance rather than following it.
+Appears from this stage onward as a persistent strip, because scheduling overlaps compliance rather than following it. **Two kinds of date live on it, and the difference matters.**
+
+**Dates the client picks.** Each cycles: *Not scheduled* → **Book a time** · *Scheduled* → date, time, join link, add-to-calendar, reschedule · *Complete* → checkmark + recap/recording.
 
 1. **Installation Meeting** — "We install Kasper on your main server." Prep: server access, admin credentials, IT contact available, ~2-hour window. Driven by `Installation` / `Installation Date`.
 2. **Setup Call** — "We configure the office, verify settings, and make sure the system is ready to use." Driven by `Set up Call` / `Set up Date`.
 3. **Training Meeting** — "We train your team." Who attends, how many seats.
 
-Each cycles: *Not scheduled* → **Book a time** · *Scheduled* → date, time, join link, add-to-calendar, reschedule · *Complete* → checkmark + recap/recording.
+**Dates the carrier gives us.** The port cutover is scheduled by Twilio and the losing carrier, not by us or the client, so it is **not bookable** and must never render with a *Book a time* button. It is written onto the schedule card the moment Twilio confirms it.
+
+4. **Phone port cutover** — *Requested* ("the carrier sets this, usually within a few days") → *Confirmed for Tue 14 Oct* → *Complete*. Driven by `Phone Port Date`.
+5. **Fax port cutover** — same, driven by `Fax Port Date`.
+
+Once confirmed, the client gets the date with add-to-calendar and the three things that actually matter on the day:
+
+- Your numbers switch over that morning.
+- Don't cancel your old service before it.
+- Someone should be in the office.
+
+A cutover the client has not planned around is how a practice loses a morning of calls, which is the whole argument for surfacing it here rather than leaving it inside the Phone Setup card. Show it against the installation date as well — a cutover landing before installation means the numbers arrive with nothing to ring on.
 
 **Exits when:** compliance chain approved, documents received, ports submitted, installation completed.
 
@@ -347,7 +360,7 @@ Per the process design: the office is actively using Kasper while some products 
 - A "You're live" banner with the go-live date.
 - **Finishing touches** — only the items still open, each with owner and ETA:
   - SMS may still be pending (A2P approval)
-  - Phone or fax porting may still be pending
+  - Phone or fax porting may still be pending — with the confirmed cutover date, if the carrier has given one
   - Forms may still be in progress
   - Training may still be upcoming
 - First-week resources: quick-start videos, help centre, support number, adoption tips.
@@ -387,19 +400,19 @@ Flagging a line reopens the matching card and pushes the record back to the owni
 |---|---|---|---|
 | `Welcome Email` | Email | Kasper | The welcome itself; not shown in the tracker |
 | `Intake` | Public form | Client | Short Getting Started form → triggers tenant build |
-| `Website` | Form → tracker B | Client | SMS chain step 1 |
+| `Website` | Form → tracker B | Client | SMS chain step 1 — supplied at intake |
 | `Customer Profile` | Tracker B | Kasper | SMS chain step 2 |
 | `Compliance Registration` | Tracker B | Kasper | SMS chain step 3 |
-| `Website Compliance` | Tracker B | Client | SMS chain step 4 |
+| `Website Compliance` | Tracker B | Kasper | SMS chain step 4 |
 | `A2P Campaign` | Tracker B | Third party | SMS chain step 5 |
 | `Hardware Phones` | Tracker B | Kasper | Hardware Phones card |
 | `Required Documents` / `…Status` | Tracker B | Client | LOA + billing statement to-dos |
-| `Phone`, `Phone Port Date` | Tracker B | Third party | Phone Setup card |
-| `Fax`, `Fax Port Date` | Tracker B | Third party | Fax Setup card |
+| `Phone`, `Phone Port Date` | Tracker B | Third party | Phone Setup card, and the cutover date on the schedule rail |
+| `Fax`, `Fax Port Date` | Tracker B | Third party | Fax Setup card, and the cutover date on the schedule rail |
 | `Office Number`, `Office Fax Number`, `Extra Phone Numbers` | Tracker B / D | Kasper | Your numbers (card + final summary) |
 | `Twilio Configuration` | — | Kasper | *(never shown)* |
-| `Installation`, `Installation Date` | Meetings rail | Client | Installation meeting card |
-| `Set up Call`, `Set up Date` | Meetings rail | Client | Setup call card |
+| `Installation`, `Installation Date` | Schedule rail | Client | Installation meeting card |
+| `Set up Call`, `Set up Date` | Schedule rail | Client | Setup call card |
 | `Current State`, `Compliance Progress`, `Next Action`, `Active Workstream` | all | — | *(never shown — drive chips and CTAs instead)* |
 
 ---
