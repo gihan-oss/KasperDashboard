@@ -68,7 +68,7 @@ Admin has ~6 states. The client gets 4, and only 4, everywhere in the product.
 | `Time in current stage` | Surfaces our SLA misses without context. |
 | `Twilio Configuration` (`Non Config`) | Pure provisioning plumbing. |
 | `A2P Campaign = Rejected` | Show "Registration returned for more detail — resubmitted" plus the *one* thing to fix. Never the word "rejected". |
-| `Compliance Progress` flags | Admin triage buckets; each maps to a client CTA instead (see §4.6). |
+| `Compliance Progress` flags | Admin triage buckets; each maps to a client CTA instead (see §5.6). |
 | Record owner, pipeline names, HubSpot IDs | — |
 
 ### 2.3 Rules that apply everywhere
@@ -80,9 +80,96 @@ Admin has ~6 states. The client gets 4, and only 4, everywhere in the product.
 - **Notify on transition only:** email/SMS when an item flips to *Action needed*, and when a milestone completes. Not on internal state churn.
 - **Email carries what the portal can't reach.** Until first login, and for anything urgent after it, email is the channel. The tracker is where state lives; email is how the client is pulled back to it.
 
+### 2.4 Who actually does the work
+
+A lot of onboarding is done entirely on the Kasper side — Twilio configuration is the clearest case: we do all of it, the client does nothing and has nothing to hand over. Every item therefore has one of three owners, and the owner decides how it renders.
+
+| Owner | Client action | How it renders |
+|---|---|---|
+| **Client** | Yes | Card with a concrete CTA, and it rolls into the top "needs you" list. |
+| **Kasper** | None | Visible **without** a CTA *only if* it explains why the client is waiting. Pure plumbing is hidden. |
+| **Third party** | None | Always visible, with an ETA and a named party — otherwise the wait reads as Kasper being slow. |
+
+**The rule for Kasper-owned work:** show it when the client is waiting on it, hide it when they aren't. Twilio provisioning and the tenant build are invisible plumbing — surfacing them only invites questions the client can't act on. Customer Profile and Compliance Registration are the opposite: the client can't do anything about either, but they are the reason step 5 hasn't started, so they stay visible with no button.
+
+**The failure mode to avoid:** hiding *all* Kasper-side work makes the tracker look stalled during the exact stretches when we're busiest. If a client-facing stage has nothing client-owned in flight, one "Kasper is working on X" line must still be showing. A tracker with nothing on it reads as neglect.
+
+| Item | Owner | In the tracker? |
+|---|---|---|
+| Remaining intake sections | Client | Yes, with CTA |
+| Website URL | Client | Yes, with CTA |
+| Website Compliance (privacy policy, consent language) | Client | Yes, with CTA — or hand to Kasper |
+| LOA signature | Client | Yes, with CTA |
+| Billing statement upload | Client | Yes, with CTA |
+| Booking the three meetings | Client | Yes, with CTA |
+| Forms review & approval | Client | Yes, with CTA |
+| Final readiness confirmation | Client | Yes, with CTA |
+| Tenant build | Kasper | No — covered by the holding email |
+| Customer Profile submission | Kasper | Yes, no CTA |
+| Compliance Registration (EKM, A2P brand, voice integrity) | Kasper | Yes, no CTA |
+| `Twilio Configuration` | Kasper | **No** — pure plumbing |
+| New number provisioning (phone, fax) | Kasper | Only as the resulting number, once it exists |
+| Hardware configuration | Kasper | Yes, as order status |
+| A2P campaign review | Third party | Yes, with ETA |
+| Phone port | Third party | Yes, with port date |
+| Fax port | Third party | Yes, with port date |
+| Hardware shipping | Third party | Yes, with tracking |
+
 ---
 
-## 3. Before the portal
+## 3. Card inventory by stage
+
+The list of blocks and what sits under each. The first three stages have no cards — the client is not on the website yet.
+
+### Stage 1 · Deal Won — *email, no cards*
+- **Welcome email** — next steps and timeline · specialist contact · "what we'll need from you" (website URL, EIN, signed LOA, recent carrier bill) · one button to the Getting Started form
+
+### Stage 2 · Intake Form — *public form, no login*
+- **Getting Started form** — office display name · first and last name · email · mobile · desired URL (with an "I don't have a website yet" branch) · confirmation screen stating when their login arrives
+
+### Stage 3 · Kasper Admin Setup — *email → first login*
+- **Holding email** — "nothing needed from you right now", 1–2 business days
+- **Credentials email** — their login, one button into the tracker
+- **First login screen** — stage rail with Getting Started active, short orientation, remaining intake form as the immediate task
+
+### Stage 4 · Core Setup (entry) → tracker stage **Getting Started**
+- **Remaining intake form** — basic office info · point of contact · extra point of contact · phones, fax & hardware · business registration & compliance (legal name, EIN, address, opening date)
+- **Your progress** — the four-stage rail, "3 of 5 sections complete"
+- **Your specialist** — persistent from here on
+- **What happens next** — preview of the three stages ahead
+- **Compliance & Communication** — locked, "unlocks when your information is complete"
+
+### Stage 5 · Core Setup → tracker stage **Compliance & Communication**
+- **Needs you** — the consolidated to-do, pulling every `Pending Office` item from every card below
+- **SMS & Messaging** — the sequential five-step chain: website URL → customer profile → compliance registration → website compliance → A2P campaign
+- **Phone Setup** — porting or new · sign LOA · upload carrier bill · numbers listed · port date · don't-cancel warning
+- **Fax Setup** — same pattern; collapses to one line when a new number is provided
+- **Hardware Phones** — models, quantity, order status, tracking, arrival before installation
+- **Forms** — list, status, preview, approve
+- **Your meetings** — the rail: installation · setup call · training
+
+### Stage 6 · Ready to Schedule → Post Installation → tracker stage **Live With Kasper**
+- **You're live** — banner with go-live date
+- **Finishing touches** — only what's still open: SMS pending A2P · porting in flight · forms · training
+- **Your numbers** — phone, fax, URL, now shown as a record
+- **Your meetings** — what's left of the rail, plus recordings
+- **First-week resources** — quick-start videos, help centre, support line
+- **Something isn't working** — opens a ticket
+
+### Stage 7 · Final Readiness — tracker stage **Final Review**
+- **Confirm everything works** — six-line checklist with a *report a problem* link per line
+- **Meet your Customer Success Manager** — name, contact, first check-in date
+- **Anything still open** — carried forward so nothing closes silently
+
+### Stage 8 · Closed — tracker stage **Onboarding Complete**
+- **Your setup summary** — go-live date · numbers · URL · modules, users, hardware
+- **Training recordings**
+- **Support** — CSM, help centre, support line
+- **How did we do?** — one feedback prompt
+
+---
+
+## 4. Before the portal
 
 ### Stage 1 — Deal Won · channel: **email**
 
@@ -136,7 +223,7 @@ Admin has ~6 states. The client gets 4, and only 4, everywhere in the product.
 
 ---
 
-## 4. Inside the tracker
+## 5. Inside the tracker
 
 ### Tracker stage A — **Getting Started** (admin: Core Setup, entry)
 
@@ -163,7 +250,7 @@ The remaining intake form, completed in-portal. Per the process design this can 
 
 The heavy stage — where most records sit. Stage headline is the consolidated to-do: **"3 things need your attention."**
 
-#### 4.1 Card — SMS & Messaging (the compliance chain)
+#### 5.1 Card — SMS & Messaging (the compliance chain)
 
 Render this as a visibly **sequential 5-step chain**, not five independent tiles. It is sequential, and showing that is what stops "why has nothing moved in a week?".
 
@@ -177,7 +264,7 @@ Render this as a visibly **sequential 5-step chain**, not five independent tiles
 
 Steps 2–5 render locked until their predecessor clears, each stating why.
 
-#### 4.2 Card — Phone Setup
+#### 5.2 Card — Phone Setup
 
 | Client element | HubSpot source |
 |---|---|
@@ -190,19 +277,19 @@ Steps 2–5 render locked until their predecessor clears, each stating why.
 
 The two documents are the highest-value actionable items in the whole tracker — put them in the top-level to-do list, not buried in the card.
 
-#### 4.3 Card — Fax Setup
+#### 5.3 Card — Fax Setup
 
 Same pattern. When `Fax = New Provided`, collapse to a single done-state line: *"Your new Kasper fax number: 804-804-9846 — active."* Driven by `Fax`, `Fax Port Date`, `Office Fax Number`.
 
-#### 4.4 Card — Hardware Phones
+#### 5.4 Card — Hardware Phones
 
 From `Hardware Phones`. Models and quantity, order status, tracking number, "arriving before your installation date" — tied to `Installation Date` so the two stay visibly linked.
 
-#### 4.5 Card — Forms
+#### 5.5 Card — Forms
 
 Digital forms to select, review and approve, with per-form status and preview.
 
-#### 4.6 Compliance Progress flags → client CTAs
+#### 5.6 Compliance Progress flags → client CTAs
 
 | Admin flag | What the client actually sees |
 |---|---|
@@ -211,7 +298,7 @@ Digital forms to select, review and approve, with per-form status and preview.
 | `A2P Rejected` | "Registration returned for more detail — we've resubmitted" + the single field to correct. |
 | `Open Office` / `Open Soon` | Not shown. Internal prioritisation only. |
 
-#### 4.7 The meetings rail (admin: Ready to Schedule)
+#### 5.7 The meetings rail (admin: Ready to Schedule)
 
 Appears from this stage onward as a persistent strip, because scheduling overlaps compliance rather than following it.
 
@@ -267,30 +354,30 @@ Flagging a line reopens the matching card and pushes the record back to the owni
 
 ---
 
-## 5. Quick reference — property → client surface
+## 6. Quick reference — property → client surface
 
-| HubSpot property | Channel / stage | Client surface |
-|---|---|---|
-| `Welcome Email` | Email | The welcome itself; not shown in the tracker |
-| `Intake` | Public form | Short Getting Started form → triggers tenant build |
-| `Website` | Form → tracker B | SMS chain step 1 |
-| `Customer Profile` | Tracker B | SMS chain step 2 |
-| `Compliance Registration` | Tracker B | SMS chain step 3 |
-| `Website Compliance` | Tracker B | SMS chain step 4 |
-| `A2P Campaign` | Tracker B | SMS chain step 5 |
-| `Hardware Phones` | Tracker B | Hardware Phones card |
-| `Required Documents` / `…Status` | Tracker B | LOA + billing statement to-dos |
-| `Phone`, `Phone Port Date` | Tracker B | Phone Setup card |
-| `Fax`, `Fax Port Date` | Tracker B | Fax Setup card |
-| `Office Number`, `Office Fax Number`, `Extra Phone Numbers` | Tracker B / D | Your numbers (card + final summary) |
-| `Twilio Configuration` | — | *(never shown)* |
-| `Installation`, `Installation Date` | Meetings rail | Installation meeting card |
-| `Set up Call`, `Set up Date` | Meetings rail | Setup call card |
-| `Current State`, `Compliance Progress`, `Next Action`, `Active Workstream` | all | *(never shown — drive chips and CTAs instead)* |
+| HubSpot property | Channel / stage | Owner | Client surface |
+|---|---|---|---|
+| `Welcome Email` | Email | Kasper | The welcome itself; not shown in the tracker |
+| `Intake` | Public form | Client | Short Getting Started form → triggers tenant build |
+| `Website` | Form → tracker B | Client | SMS chain step 1 |
+| `Customer Profile` | Tracker B | Kasper | SMS chain step 2 |
+| `Compliance Registration` | Tracker B | Kasper | SMS chain step 3 |
+| `Website Compliance` | Tracker B | Client | SMS chain step 4 |
+| `A2P Campaign` | Tracker B | Third party | SMS chain step 5 |
+| `Hardware Phones` | Tracker B | Kasper | Hardware Phones card |
+| `Required Documents` / `…Status` | Tracker B | Client | LOA + billing statement to-dos |
+| `Phone`, `Phone Port Date` | Tracker B | Third party | Phone Setup card |
+| `Fax`, `Fax Port Date` | Tracker B | Third party | Fax Setup card |
+| `Office Number`, `Office Fax Number`, `Extra Phone Numbers` | Tracker B / D | Kasper | Your numbers (card + final summary) |
+| `Twilio Configuration` | — | Kasper | *(never shown)* |
+| `Installation`, `Installation Date` | Meetings rail | Client | Installation meeting card |
+| `Set up Call`, `Set up Date` | Meetings rail | Client | Setup call card |
+| `Current State`, `Compliance Progress`, `Next Action`, `Active Workstream` | all | — | *(never shown — drive chips and CTAs instead)* |
 
 ---
 
-## 6. Worked example — The Tooth Workshop, today
+## 7. Worked example — The Tooth Workshop, today
 
 Admin record: stage `Core Setup`, `Current State = Pending Office`, `Compliance Progress = No Website Domain`, `Next Action = website url & cust profile`, `Website Compliance = Pending Office`, `Required Documents = LOA Pending, Billing Statement Pending`, `Hardware Phones = Configured`, `Fax = New Provided`.
 
