@@ -357,6 +357,27 @@ table.plan .who{font-family:var(--serif); font-weight:600; color:var(--tx); font
 .leaderchip .lt .rl{font-size:11px; color:var(--pink); font-weight:600}
 .leaderchip .lt .fn{font-size:11px; color:var(--tx3); margin-top:3px; max-width:52ch; line-height:1.4}
 .opcard{padding:14px 16px; border-radius:13px; background:var(--card); border:1px solid var(--line)}
+/* Compact density. The department pages carry a lot, and at full scale a
+   reader sees one card per screen. `.dense` pulls the whole page back about a
+   third without touching any of the content. */
+.dense .h1{font-size:clamp(21px,2.1vw,27px)}
+.dense .lede{font-size:13px;margin-top:8px;max-width:78ch}
+.dense .secttl{font-size:15px}
+.dense .pad{padding:14px}
+.dense .card{border-radius:13px}
+.dense .opcard{padding:10px 12px;border-radius:10px}
+.dense .four{gap:10px}
+.dense .leaderchip{padding:9px 12px;gap:10px;border-radius:11px}
+.dense .leaderchip .av{width:30px;height:30px;font-size:11px}
+.dense .aoftag{font-size:10px;padding:4px 10px}
+.dense .eyebrow{font-size:9px}
+.dense .tabx{padding:7px 11px;font-size:12px}
+.dense .tabnav{margin-bottom:13px;gap:2px}
+.dense .mt{margin-top:14px}
+.dense .mt2{margin-top:18px}
+.dense p{font-size:13px}
+.densebtn{background:none;border:1px solid var(--line2);border-radius:20px;padding:5px 12px;font-family:var(--sans);font-weight:600;font-size:10px;color:var(--tx3);cursor:pointer}
+.densebtn:hover{border-color:var(--pink);color:var(--pink)}
 .opcard .oi{width:28px;height:28px;border-radius:8px; display:grid; place-items:center; background:rgba(56,182,240,.13); color:var(--teal); margin-bottom:9px}
 .opcard b{font-size:12.5px; display:block; margin-bottom:3px}
 .opcard p{font-size:11px; color:var(--tx3); line-height:1.5}
@@ -415,6 +436,8 @@ table.plan .who{font-family:var(--serif); font-weight:600; color:var(--tx); font
 .gqhead div{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:700;text-align:center;padding:4px 0;border-left:1px solid var(--line)}
 .gmhead{display:grid;grid-template-columns:repeat(6,1fr)}
 .gmhead div{font-size:10.5px;color:var(--tx3);text-align:center;padding:6px 0;border-left:1px solid var(--line);font-weight:600}
+.gmhead div em{font-style:normal;font-size:8px;letter-spacing:.08em;color:var(--tx3);opacity:.65;margin-left:4px;vertical-align:super}
+.gmhead div.qsplit{border-left:1px solid var(--line2)}
 .gdept{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:11px 8px 6px}
 .glabel{font-size:12px;color:var(--tx2);padding:8px 12px 8px 8px;line-height:1.35}
 .gtrack{position:relative;height:34px;background-image:repeating-linear-gradient(90deg,transparent,transparent calc(100%/6 - 1px),var(--line) calc(100%/6 - 1px),var(--line) calc(100%/6))}
@@ -523,6 +546,13 @@ table.plan .who{font-family:var(--serif); font-weight:600; color:var(--tx); font
 .gedit input,.gedit select{background:var(--card);border:1px solid var(--line2);border-radius:6px;padding:5px 7px;font-family:var(--sans);font-weight:500;font-size:11.5px;color:var(--tx)}
 .gedit input:focus,.gedit select:focus{outline:none;border-color:var(--pink)}
 .gedit input.gname{width:100%;min-width:150px}
+.gedit td:first-child{min-width:210px;width:28%}
+.gedit td.gmscell{white-space:nowrap}
+.gedit td.gmscell input{width:62px;margin-right:4px}
+.gedit td:nth-child(6) select{max-width:180px}
+/* Below the width the columns need, the grid scrolls rather than crushing a
+   cell — the same thing a spreadsheet does. */
+.geditwrap{overflow-x:auto}
 .gedit .drow{cursor:pointer;color:var(--red);border:0;background:none;font-size:15px;line-height:1}
 .gedit .gdeptrow td{background:var(--panel2);font-weight:700;color:var(--tx);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding-top:12px}
 .gaddbtn{margin:6px 0 14px;background:none;border:1px dashed var(--line2);border-radius:8px;padding:7px 13px;font-family:var(--sans);font-weight:600;font-size:11px;color:var(--tx3);cursor:pointer}
@@ -2085,15 +2115,28 @@ function deptPrioList(key){
 const TASK_STAT=['Not started','In progress','Done','Blocked'];
 const TASK_STAT_C={'Not started':'#9aa3ce','In progress':'#e08a22','Done':'#1fa971','Blocked':'#d64550'};
 function taskStatus(t){ return (t.length>6&&t[6])?t[6]:'Not started'; }
+function taskOwner(t){ return (t.length>7&&t[7])?t[7]:''; }
+/* Owners come from the department's own team list, so a task can only be
+   assigned to somebody who actually exists on that team. */
+function deptOwners(key){
+  if(typeof DEPTS==='undefined')return [];
+  const d=DEPTS[key];
+  if(d&&d.team)return d.team.map(m=>m[0]);
+  /* Company-level groups (Investor Relations) have no team of their own, so
+     they are owned by a department head rather than being unassignable. */
+  return Object.keys(DEPTS).map(k=>DEPTS[k].leader&&DEPTS[k].leader.name).filter(Boolean);
+}
 function prioPill(t){ return (t.length>5&&t[5])?`<span class="tprio">\u25c6 ${t[5]}</span>`:''; }
 function statPill(t){ const s=taskStatus(t); return `<span class="tstat" style="--c:${TASK_STAT_C[s]||'#9aa3ce'}">${s}</span>`; }
 function gviewRows(tasks,color){ return tasks.map(t=>`<div class="grow"><div class="glabel">${t[0]}${statPill(t)}${prioPill(t)}</div><div class="gtrack">${gbar(t,color)}</div></div>`).join(''); }
-function ghead(labelCol){ return `<div class="grow head"><div class="glabel" style="font-weight:700;color:var(--tx3);font-size:10px;letter-spacing:.1em;text-transform:uppercase">${labelCol||'Task'}</div><div class="gqhead"><div>Q3 \u00b7 Jul\u2013Sep</div><div>Q4 \u00b7 Oct\u2013Dec</div></div></div><div class="grow"><div class="glabel"></div><div class="gmhead">${RM_MO.map(m=>`<div>${m}</div>`).join('')}</div></div>`; }
+function ghead(labelCol){ return `<div class="grow head"><div class="glabel" style="font-weight:700;color:var(--tx3);font-size:10px;letter-spacing:.1em;text-transform:uppercase">${labelCol||'Task'}</div><div class="gmhead">${RM_MO.map((m,i)=>`<div class="${i===3?'qsplit':''}">${m}<em>${i<3?'Q3':'Q4'}</em></div>`).join('')}</div></div>`; }
 function gEditTeam(d){
   const prios=deptPrioList(d.key);
   const hasDept=(typeof DEPTS!=='undefined')&&DEPTS[d.key];
   const prioSel=(cur,i)=> hasDept? `<select onchange="rmPrioChange('${d.key}',${i},this)"><option value="">\u2014</option>${prios.map(p=>`<option value="${String(p.t).replace(/"/g,'&quot;')}" ${cur===p.t?'selected':''}>${p.q}: ${p.t}</option>`).join('')}<option value="__new__">+ Add new priority\u2026</option></select>` : '<span style="color:var(--tx3);font-size:11px">\u2014</span>';
   const statSel=(cur,i)=>`<select onchange="rmEdit('${d.key}',${i},'status',this.value)">${TASK_STAT.map(s=>`<option value="${s}" ${cur===s?'selected':''}>${s}</option>`).join('')}</select>`;
+  const owners=deptOwners(d.key);
+  const ownSel=(cur,i)=> owners.length? `<select onchange="rmEdit('${d.key}',${i},'owner',this.value)"><option value="">Unassigned</option>${owners.map(o=>`<option value="${String(o).replace(/"/g,'&quot;')}" ${cur===o?'selected':''}>${o}</option>`).join('')}</select>` : '<span style="color:var(--tx3);font-size:11px">\u2014</span>';
   return d.tasks.map((t,i)=>{
     const endIdx=t[1]+t[2]-1;
     const ms=(t.length>3&&t[3]!=null&&t[3]!=='')?t[3]:'';
@@ -2103,8 +2146,9 @@ function gEditTeam(d){
     const msSel=`<select onchange="rmEdit('${d.key}',${i},'ms',this.value)"><option value="">\u2013</option>${RM_MO.map((m,mi)=>`<option value="${mi}" ${ms===mi?'selected':''}>${m}</option>`).join('')}</select>`;
     return `<tr>
       <td><input class="gname" value="${String(t[0]).replace(/"/g,'&quot;')}" oninput="rmEdit('${d.key}',${i},'label',this.value)"></td>
+      <td>${ownSel(taskOwner(t),i)}</td>
       <td>${startSel}</td><td>${endSel}</td>
-      <td><input style="width:58px" placeholder="label" value="${String((t.length>4?t[4]:'')||'').replace(/"/g,'&quot;')}" oninput="rmEdit('${d.key}',${i},'mslabel',this.value)"> ${msSel}</td>
+      <td class="gmscell"><input placeholder="label" value="${String((t.length>4?t[4]:'')||'').replace(/"/g,'&quot;')}" oninput="rmEdit('${d.key}',${i},'mslabel',this.value)"> ${msSel}</td>
       <td>${prioSel(cur,i)}</td>
       <td>${statSel(taskStatus(t),i)}</td>
       <td style="text-align:right"><button class="drow" title="Delete" onclick="rmDel('${d.key}',${i})">\u2715</button></td>
@@ -2120,6 +2164,7 @@ window.rmEdit=function(key,idx,field,val){
   else if(field==='mslabel'){ if(t.length<4||t[3]==null||t[3]===''){ t[3]=t[1]; } t[4]=val; }
   else if(field==='prio'){ if(t[3]===undefined)t[3]=null; if(t[4]===undefined)t[4]=''; t[5]=val; }
   else if(field==='status'){ while(t.length<6){ t.push(t.length===3?null:''); } t[6]=val; }
+  else if(field==='owner'){ while(t.length<7){ t.push(t.length===3?null:''); } t[7]=val; }
   rmSync();
 };
 window.rmPrioChange=function(key,idx,sel){
@@ -2152,11 +2197,11 @@ function rmRenderCompany(filter){
   // the same tasks, always directly editable — no View/Edit mode to switch into
   const edit=document.getElementById('ganttEdit');
   if(edit){
-    let e='<table class="gedit"><thead><tr><th>Task</th><th>Start</th><th>End</th><th>Milestone</th><th>Tied to priority</th><th>Status</th><th></th></tr></thead><tbody>';
+    let e='<div class="geditwrap"><table class="gedit"><thead><tr><th>Task</th><th>Owner</th><th>Start</th><th>End</th><th>Milestone</th><th>Tied to priority</th><th>Status</th><th></th></tr></thead><tbody>';
     teams.forEach(d=>{
-      e+=`<tr class="gdeptrow"><td colspan="7" style="color:${d.color}">${d.dept} <span class="gcount">${d.tasks.length}</span></td></tr>`+gEditTeam(d)+`<tr><td colspan="7"><button class="gaddbtn" onclick="rmAdd('${d.key}')">+ Add task</button></td></tr>`;
+      e+=`<tr class="gdeptrow"><td colspan="8" style="color:${d.color}">${d.dept} <span class="gcount">${d.tasks.length}</span></td></tr>`+gEditTeam(d)+`<tr><td colspan="8"><button class="gaddbtn" onclick="rmAdd('${d.key}')">+ Add task</button></td></tr>`;
     });
-    edit.innerHTML=e+'</tbody></table>';
+    edit.innerHTML=e+'</tbody></table></div>';
   }
 }
 window.rmRenderDept=function(key){
@@ -2164,7 +2209,7 @@ window.rmRenderDept=function(key){
   const d=rmFind(key); if(!d){mount.innerHTML='';return;}
   const toolbar=`<div class="gtoolbar"><span class="gcount">${d.tasks.length} tasks</span><span style="font-size:11px;color:var(--tx3)">Edit any row directly \u2014 changes sync with Company Tasks.</span></div>`;
   const timeline=`<div class="gantt card pad" style="padding-top:6px"><div class="gantt-inner">${ghead('Task')}<div>${gviewRows(d.tasks,d.color)}</div></div></div>`;
-  const table=`<div class="card pad mt2"><table class="gedit"><thead><tr><th>Task</th><th>Start</th><th>End</th><th>Milestone</th><th>Tied to priority</th><th>Status</th><th></th></tr></thead><tbody>${gEditTeam(d)}<tr><td colspan="7"><button class="gaddbtn" onclick="rmAdd('${key}')">+ Add task</button></td></tr></tbody></table></div>`;
+  const table=`<div class="card pad mt2"><div class="geditwrap"><table class="gedit"><thead><tr><th>Task</th><th>Owner</th><th>Start</th><th>End</th><th>Milestone</th><th>Tied to priority</th><th>Status</th><th></th></tr></thead><tbody>${gEditTeam(d)}<tr><td colspan="8"><button class="gaddbtn" onclick="rmAdd('${key}')">+ Add task</button></td></tr></tbody></table></div></div>`;
   mount.innerHTML=toolbar+timeline+table;
 };
 window.rmSync=function(){
@@ -2198,16 +2243,49 @@ window.DEPTS2={
 };
 
 /* ---- tabbed department module (no leader write-up) ---- */
+/* Density is a page-level preference, not per-department: set it once and every
+   department page opens the same way. Compact is the default — these pages are
+   dense by nature and the full scale shows about one card per screen. */
+window.DENSE = (function(){ try{ return localStorage.getItem('kb-dense')!=='0'; }catch(e){ return true; } })();
+window.toggleDense=function(btn){
+  window.DENSE=!window.DENSE;
+  try{ localStorage.setItem('kb-dense', window.DENSE?'1':'0'); }catch(e){}
+  ['eng','product','cs','sales','finance','ops'].forEach(k=>{
+    const m=document.getElementById('m-'+k); if(m)m.classList.toggle('dense', window.DENSE);
+  });
+  document.querySelectorAll('.densebtn').forEach(b=>b.textContent=window.DENSE?'Comfortable view':'Compact view');
+};
+
 function renderDeptV2(id){
   const d=DEPTS[id], sec=document.getElementById('m-'+id);
   const hires=d.team.filter(t=>t[4]==='hire').length;
+  const isProd=id==='product';
+  sec.classList.toggle('dense', !!window.DENSE);
+  /* One flat strip of tabs. Each is a destination in its own right, so nothing
+     is reached by clicking through a card into another card into a panel. */
+  const tabs=[
+    ['strat','Strategy'],
+    isProd?['map','Product map']:null,
+    isProd?['moon','Moonshots']:null,
+    ['ops','How we operate'],
+    ['proc','Core processes'],
+    ['tactics','Tactics'],
+    ['keyact','Key activities'],
+    ['team','Team'],
+    ['okr','OKRs'],
+    ['raci','Ownership'],
+    ['casc','Cascade'],
+    ['prio','Priorities'],
+    ['tasks','Tasks &amp; timeline']
+  ].filter(Boolean);
   sec.innerHTML=`
    <div class="eyebrow" style="color:${d.aofHex}">The Engine · Department</div>
    <div class="depthead">
      <h1 class="h1" style="margin:0">${d.name}</h1>
-     <div style="display:flex;gap:10px;flex-wrap:wrap">
+     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
        <span class="aoftag"><span class="sw" style="background:${d.aofHex}"></span>Area of focus · ${d.aof}</span>
        ${hires?`<span class="aoftag" style="border-color:rgba(255,184,77,.45);background:rgba(255,184,77,.10)"><span class="sw" style="background:var(--gold)"></span>+${hires} roles to hire</span>`:''}
+       <button class="densebtn" onclick="toggleDense(this)">${window.DENSE?'Comfortable view':'Compact view'}</button>
      </div>
    </div>
    <div class="leaderchip mt2" style="max-width:640px">
@@ -2216,44 +2294,38 @@ function renderDeptV2(id){
    </div>
    <div class="tabwrap" id="dtab-${id}">
      <div class="tabnav">
-       <button class="tabx on" data-tab="strat" onclick="_tab(this)">Strategy</button>
-       ${id==='product'?`<button class="tabx" data-tab="moon" onclick="_tab(this)">Moonshots</button>`:''}
-       <button class="tabx" data-tab="ops" onclick="_tab(this)">How we operate</button>
-       <button class="tabx" data-tab="tactics" onclick="_tab(this)">Tactics</button>
-       <button class="tabx" data-tab="keyact" onclick="_tab(this)">Key activities</button>
-       <button class="tabx" data-tab="team" onclick="_tab(this)">Team</button>
-       <button class="tabx" data-tab="okr" onclick="_tab(this)">OKRs &amp; RACI</button>
-       <button class="tabx" data-tab="prio" onclick="_tab(this)">Priorities</button>
-       <button class="tabx" data-tab="road" onclick="_tab(this)">Roadmap</button>
+       ${tabs.map((t,i)=>`<button class="tabx ${i===0?'on':''}" data-tab="${t[0]}" onclick="_tab(this)">${t[1]}</button>`).join('')}
      </div>
      <div class="tabpane on" data-pane="strat">
-       <div class="card pad"><h3 class="secttl">Department objective</h3><p style="font-size:14px;color:var(--tx2);max-width:90ch;line-height:1.6">${d.objective}</p></div>
+       <div class="card pad"><h3 class="secttl">Department objective</h3><p style="color:var(--tx2);max-width:90ch;line-height:1.6">${d.objective}</p></div>
        ${window.stratBlock?window.stratBlock(id):''}
-       ${id==='product'&&window.productMapBlock?window.productMapBlock():''}
      </div>
-     ${id==='product'?`<div class="tabpane" data-pane="moon"><div id="moonwrap-product"></div></div>`:''}
+     ${isProd?`<div class="tabpane" data-pane="map">${window.productMapBlock?window.productMapBlock():''}</div>`:''}
+     ${isProd?`<div class="tabpane" data-pane="moon"><div id="moonwrap-product"></div></div>`:''}
      <div class="tabpane" data-pane="ops">
        <h3 class="secttl">How a healthy SaaS ${d.short} team operates</h3>
        <div class="four" style="margin-top:12px">${d.healthy.map(h=>`<div class="opcard"><div class="oi">${ICON[h[2]]||ICON.check}</div><b>${h[0]}</b><p>${h[1]}</p></div>`).join('')}</div>
-       ${window.procBlock?window.procBlock(id):''}
      </div>
+     <div class="tabpane" data-pane="proc">${window.procBlock?window.procBlock(id):''}</div>
      <div class="tabpane" data-pane="tactics"><div id="tactwrap-${id}"></div></div>
      <div class="tabpane" data-pane="keyact"><div id="kawrap-${id}"></div></div>
      <div class="tabpane" data-pane="team"><div id="teamwrap-${id}"></div></div>
      <div class="tabpane" data-pane="okr">
-       <div class="two">
-         <div class="card pad"><h3 class="secttl">Department OKRs</h3><div class="grid" style="gap:12px;margin-top:10px">${okrBlocks(d.okrs)}</div></div>
-         <div class="card pad"><h3 class="secttl">Ownership (RACI)</h3><div style="margin-top:6px">${raciChips(d.raci)}</div></div>
-       </div>
-       <div class="card pad mt"><h3 class="secttl">From strategy to the microscopic task</h3><p class="sechint">High-level intent, cascaded to what someone does this week.</p><div class="mt2">${cascadeHtml(d.cascade)}</div></div>
+       <div class="card pad"><h3 class="secttl">Department OKRs</h3><div class="grid" style="gap:12px;margin-top:10px">${okrBlocks(d.okrs)}</div></div>
+     </div>
+     <div class="tabpane" data-pane="raci">
+       <div class="card pad"><h3 class="secttl">Ownership (RACI)</h3><div style="margin-top:6px">${raciChips(d.raci)}</div></div>
+     </div>
+     <div class="tabpane" data-pane="casc">
+       <div class="card pad"><h3 class="secttl">From strategy to the microscopic task</h3><p class="sechint">High-level intent, cascaded to what someone does this week.</p><div class="mt2">${cascadeHtml(d.cascade)}</div></div>
      </div>
      <div class="tabpane" data-pane="prio">
        <div id="priowrap-${id}"></div>
        <div class="tieback mt"><span class="ti">${ICON.compass}</span><div><b>How this ties back to strategy.</b> ${d.tieback}</div></div>
      </div>
-     <div class="tabpane" data-pane="road">
-       <h3 class="secttl">Roadmap to year-end</h3>
-       <p class="sechint">This team's tasks, July–December 2026 — editable here or in <b>Company Tasks</b>; changes sync both ways.</p>
+     <div class="tabpane" data-pane="tasks">
+       <h3 class="secttl">Tasks to year-end</h3>
+       <p class="sechint">Every task with its owner, dates, priority and status — editable in place, like a grid. Changes sync with <b>Company Tasks</b>.</p>
        <div id="gmount-${id}"></div>
      </div>
    </div>`;
@@ -2262,7 +2334,7 @@ function renderDeptV2(id){
   if(window.renderPrio)window.renderPrio(id);
   if(window.renderTactics)window.renderTactics(id);
   if(window.renderKeyAct)window.renderKeyAct(id);
-  if(id==='product'&&window.renderMoonshots)window.renderMoonshots();
+  if(isProd&&window.renderMoonshots)window.renderMoonshots();
 }
 
 /* ---- rebind renderers ---- */
