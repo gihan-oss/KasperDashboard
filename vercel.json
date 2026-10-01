@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/Kasper_Board_Dashboard.html" },
+    { "source": "/m/:page", "destination": "/Kasper_Board_Dashboard.html" },
+    { "source": "/(.*)", "destination": "/Kasper_Board_Dashboard.html" }
+  ]
+}
